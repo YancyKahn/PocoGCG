@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import time
+import os
 
 import sys
 work_path = os.path.abspath(".")
@@ -15,7 +16,6 @@ from llm_attacks.poco_gcg.opt_utils import load_model_and_tokenizer, get_filtere
 from llm_attacks.poco_gcg.string_utils import SuffixManager, load_conversation_template
 from llm_attacks import get_nonascii_toks
 import argparse
-import os
 import json
 import time 
 import random
@@ -181,14 +181,16 @@ def attack(args, model, tokenizer, suffix_manager):
                                         test_prefixes,
                                         suffix_manager.padding_length
                                         )
-
-                print(f"\nItera:{i}\nPassed:{is_success}\nCurrent Suffix:{best_new_adv_suffix}\nGenerated Text:{gen_str}", end='\r')
+                
+                prompt_input_ids = input_ids[:suffix_manager._assistant_role_slice.stop + suffix_manager.padding_length].to(model.device).unsqueeze(0)
+                prompt_str = tokenizer.decode(prompt_input_ids[0])
+                print(f"\nItera:{i}\nPassed:{is_success}\nPrompt:{suffix_manager.get_prompt()}\nCurrent Suffix:{best_new_adv_suffix}\nGenerated Text:{gen_str}", end='\r')
                 result.append({
                     "iter": i,
                     "loss": float(current_loss.detach().cpu().numpy()),
                     "is_success": is_success,
                     "adv_suffix": best_new_adv_suffix,
-                    "prompt": suffix_manager.get_prompt(),
+                    "prompt": prompt_str,
                     "gen_str": gen_str
                 })
 
@@ -208,9 +210,9 @@ def attack(args, model, tokenizer, suffix_manager):
     input_ids = suffix_manager.get_input_ids(adv_string=adv_suffix).to(model.device)
 
     gen_str = tokenizer.decode((generate(model, tokenizer, input_ids, suffix_manager._assistant_role_slice, suffix_manager.padding_length, gen_config=gen_config))).strip()
-
-    prompt_str = suffix_manager.get_prompt()
-    prompt_str = prompt_str[:prompt_str.find(args.padding_token) + len(args.padding_token)]
+   
+    prompt_input_ids = input_ids[:suffix_manager._assistant_role_slice.stop + suffix_manager.padding_length].to(model.device).unsqueeze(0)
+    prompt_str = tokenizer.decode(prompt_input_ids[0])
 
     completion = {
         "is_success": is_success,
@@ -226,21 +228,24 @@ def attack(args, model, tokenizer, suffix_manager):
 
     return completion
 
-def main(args):
+def main(args, model=None, tokenizer=None, conv_template=None):
     set_seed(args.seed)
 
-    args.output_path = f"{args.output_path}/{args.baseline}/{args.model_name}/attack_{time.time()}"
+    args.output_path = f"{args.base_output_path}/{args.baseline}/{args.model_name}/attack_{time.time()}"
     args.model_path = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["path"]
     args.template_name = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["template"]
 
     args.padding_token = ""
+    args.padding_length = 0
 
-    model, tokenizer = load_model_and_tokenizer(args.model_path, 
-                       low_cpu_mem_usage=True, 
-                       use_cache=False,
-                       device=args.device)
+    if model == None or tokenizer == None:
+        model, tokenizer = load_model_and_tokenizer(args.model_path, 
+                        low_cpu_mem_usage=True, 
+                        use_cache=False,
+                        device=args.device)
 
-    conv_template = load_conversation_template(args.template_name)
+    if conv_template == None:
+        conv_template = load_conversation_template(args.template_name)
 
 
     suffix_manager = SuffixManager(tokenizer=tokenizer, 
