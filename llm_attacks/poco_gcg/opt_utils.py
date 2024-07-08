@@ -7,6 +7,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llm_attacks import get_embedding_matrix, get_embeddings
 
+alpha = 0.5     #TODO: 0.9
+refuse_tokens = [
+    "I", "As", "Sorry", "unethical", "illegal", "cannot", "However", "But", "must", "please"
+]
 
 def token_gradients(model, tokenizer, input_ids, input_slice, target_slice, loss_slice):
     """
@@ -60,7 +64,29 @@ def token_gradients(model, tokenizer, input_ids, input_slice, target_slice, loss
     targets = input_ids[target_slice]
     accept_loss = nn.CrossEntropyLoss()(logits[0,loss_slice,:], targets)
 
-    loss = accept_loss
+    # 拒绝损失token
+    refuse_loss = 0
+    length_of_refuse = target_slice.stop - target_slice.start
+    for token in refuse_tokens:
+        refuse_token = tokenizer(token, add_special_tokens=False).input_ids
+        padding_refuse_token = [
+            refuse_token * (length_of_refuse // len(refuse_token))
+        ]
+        padding_refuse_token = padding_refuse_token[0]
+        if length_of_refuse % len(refuse_token) != 0:
+            padding_refuse_token.extend(
+                refuse_token[:length_of_refuse % len(refuse_token)]
+            )
+
+        refuse_target = torch.tensor(
+            padding_refuse_token,
+            device=model.device, dtype=torch.long
+        )
+        refuse_loss += nn.CrossEntropyLoss()(logits[0,loss_slice,:], refuse_target)
+
+    refuse_loss = - refuse_loss / len(refuse_tokens)
+
+    loss = alpha * accept_loss + (1 - alpha) * refuse_loss 
     
     loss.backward()
     
@@ -186,7 +212,38 @@ def target_loss(model, tokenizer, logits, ids, target_slice):
     loss_slice = slice(target_slice.start-1, target_slice.stop-1)
     accept_loss = crit(logits[:,loss_slice,:].transpose(1,2), ids[:,target_slice])
 
-    return accept_loss.mean(dim=-1)
+    # 拒绝损失token
+    refuse_loss = 0
+    length_of_refuse = target_slice.stop - target_slice.start
+    for token in refuse_tokens:
+        refuse_token = tokenizer(token, add_special_tokens=False).input_ids
+        padding_refuse_token = [
+            refuse_token * (length_of_refuse // len(refuse_token))
+        ]
+        padding_refuse_token = padding_refuse_token[0]
+        if length_of_refuse % len(refuse_token) != 0:
+            padding_refuse_token.extend(
+                refuse_token[:length_of_refuse % len(refuse_token)]
+            )
+
+        refuse_target = torch.tensor(
+            padding_refuse_token,
+            device=model.device, dtype=torch.long
+        )
+
+        # add the batched dimension for refuse target
+        refuse_target = refuse_target.unsqueeze(0).repeat(ids.shape[0], 1)
+        
+        # Ensure refuse_target has the same shape as ids[:, target_slice]
+        refuse_target = refuse_target[:, :ids[:, target_slice].shape[1]]
+
+        refuse_loss += crit(logits[:,loss_slice,:].transpose(1,2), refuse_target)
+
+    refuse_loss = - refuse_loss / len(refuse_tokens)
+    
+    loss = alpha * accept_loss + (1-alpha) * refuse_loss
+
+    return loss.mean(dim=-1)
 
 
 def load_model_and_tokenizer(model_path, tokenizer_path=None, device='cuda:0', **kwargs):
