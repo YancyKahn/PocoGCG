@@ -280,7 +280,7 @@ if __name__ == '__main__':
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=20)
     parser.add_argument("--baseline", type=str, default="poco")
-    parser.add_argument("--output_path", type=str, default="./results/")
+    parser.add_argument("--output_path", type=str, default="./results/tmp")
 
 
     args = parser.parse_args()

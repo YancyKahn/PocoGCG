@@ -1,6 +1,6 @@
 MODEL_PATH_AND_TEMPLATE = {
     "llama-2": {
-        "path": "/root/LLM/llama-2-7b-chat",
+        "path": "/root/llm/models--meta-llama--Llama-2-7b-hf/snapshots/6fdf2e60f86ff2481f2241aaee459f85b5b0bbb9",
         # "path": "meta-llama/Llama-2-7b-chat-hf",
         "template": "llama-2"
     },
@@ -10,7 +10,7 @@ MODEL_PATH_AND_TEMPLATE = {
         "template": "vicuna_v1.1"
     },
     "mistral": {
-        "path": "/root/LLM/mistral",
+        "path": "/root/llm/mistral-instrut-7b",
         # "path": "mistralai/Mistral-7B-v0.1",
         "template": "mistral"
     },

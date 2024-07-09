@@ -171,7 +171,7 @@ def attack(args, model, tokenizer, suffix_manager):
 
             # Update the running adv_suffix with the best candidate
             adv_suffix = best_new_adv_suffix
-            if i % 10 == 0 and i > 50:
+            if i % 10 == 0:
                 is_success, gen_str = check_for_attack_success(model, 
                                         tokenizer,
                                         suffix_manager.get_input_ids(adv_string=adv_suffix).to(args.device), 
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=20)
     parser.add_argument("--baseline", type=str, default="gcg")
-    parser.add_argument("--output_path", type=str, default="./results/")
+    parser.add_argument("--output_path", type=str, default="./results/tmp")
 
 
     args = parser.parse_args()
