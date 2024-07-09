@@ -229,7 +229,6 @@ def attack(args, model, tokenizer, suffix_manager):
 def main(args, model=None, tokenizer=None, conv_template=None):
     set_seed(args.seed)
 
-    args.output_path = f"{args.base_output_path}/{args.baseline}/{args.model_name}/attack_{time.time()}"
     args.model_path = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["path"]
     args.template_name = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["template"]
 

@@ -8,6 +8,7 @@ from llm_attacks.minimal_gcg.string_utils import load_conversation_template
 import argparse
 import os 
 import config
+import time
 
 def dynamic_import(module):
     return importlib.import_module(module)
@@ -18,6 +19,7 @@ def main(args):
     args.model_path = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["path"]
     args.template_name = config.MODEL_PATH_AND_TEMPLATE[args.model_name]["template"]
 
+    args.output_path = f"{args.base_output_path}/{args.baseline}/{args.model_name}/attack_{time.time()}"
     # dynamic import 
     model, tokenizer = load_model_and_tokenizer(args.model_path, 
                     low_cpu_mem_usage=True, 
