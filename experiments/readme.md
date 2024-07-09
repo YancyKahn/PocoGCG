@@ -13,6 +13,8 @@ bash run_llama2_poco_no_padding.sh > output_llama2_poco_no_padding.log 2>&1 &
 bash run_llama2_poco_padding_10.sh > output_llama2_poco_padding_10.log 2>&1 &
 
 bash run_llama2_poco_padding_20.sh > output_llama2_poco_padding_20.log 2>&1 &
+
+bash run_llama2_poco.sh > output_llama2_poco.log 2>&1 &
 ```
 
 docker pull pytorch/pytorch:2.3.0-cuda12.1-cudnn8-devel
