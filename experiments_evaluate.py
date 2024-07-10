@@ -66,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=512)
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=20)
+    parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--baseline", type=str, default="poco", choices=["gcg", "prefilling", "refuse", "poco"])
     parser.add_argument("--base_output_path", type=str, default="./results")
 

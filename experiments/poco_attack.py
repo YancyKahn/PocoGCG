@@ -128,7 +128,8 @@ def attack(args, model, tokenizer, suffix_manager):
                                         input_ids, 
                                         suffix_manager._control_slice, 
                                         suffix_manager._target_slice, 
-                                        suffix_manager._loss_slice)
+                                        suffix_manager._loss_slice,
+                                        alpha=args.alpha)
         
             
         # Step 3. Sample a batch of new tokens based on the coordinate gradient.
@@ -164,7 +165,7 @@ def attack(args, model, tokenizer, suffix_manager):
                                     return_ids=True,
                                     batch_size=512) # decrease this number if you run into OOM.
 
-            losses = target_loss(model, tokenizer, logits, ids, suffix_manager._target_slice)
+            losses = target_loss(model, tokenizer, logits, ids, suffix_manager._target_slice,alpha=args.alpha)
 
             best_new_adv_suffix_id = losses.argmin()
             best_new_adv_suffix = new_adv_suffix[best_new_adv_suffix_id]
@@ -282,6 +283,7 @@ if __name__ == '__main__':
     parser.add_argument("--topk", type=int, default=256)
     parser.add_argument("--seed", type=int, default=20)
     parser.add_argument("--baseline", type=str, default="poco")
+    parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--output_path", type=str, default="./results/tmp")
 
 

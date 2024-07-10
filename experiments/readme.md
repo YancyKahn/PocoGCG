@@ -17,6 +17,10 @@ bash run_llama2_poco_padding_20.sh > output_llama2_poco_padding_20.log 2>&1 &
 bash run_llama2_poco.sh > output_llama2_poco.log 2>&1 &
 
 bash run_vicuna_gcg.sh > output_vicuna_gcg.log 2>&1 &
+
+bash run_llama2_refuse.sh > output_llama2_refuse.log 2>&1 &
+
+bash run_llama2_special_suffix.sh > output_llama2_special_suffix.log 2>&1 &
 ```
 
 docker pull pytorch/pytorch:2.3.0-cuda12.1-cudnn8-devel

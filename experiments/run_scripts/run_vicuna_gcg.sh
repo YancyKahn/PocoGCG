@@ -1,7 +1,7 @@
 #!/bin/bash
 
 python_script_path="../../experiments_evaluate.py"
-device="cuda:6"
+device="cuda:4"
 model_name="vicuna"
 
 python $python_script_path \

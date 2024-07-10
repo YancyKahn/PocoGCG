@@ -7,12 +7,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llm_attacks import get_embedding_matrix, get_embeddings
 
-alpha = 0.5     #TODO: 0.9
 refuse_tokens = [
     "I", "As", "Sorry", "unethical", "illegal", "cannot", "However", "But", "must", "please"
 ]
 
-def token_gradients(model, tokenizer, input_ids, input_slice, target_slice, loss_slice):
+def token_gradients(model, tokenizer, input_ids, input_slice, target_slice, loss_slice, alpha=0.5):
     """
     Computes gradients of the loss with respect to the coordinates.
     
@@ -207,7 +206,7 @@ def forward(*, model, input_ids, attention_mask, batch_size=512):
     
     return torch.cat(logits, dim=0)
 
-def target_loss(model, tokenizer, logits, ids, target_slice):
+def target_loss(model, tokenizer, logits, ids, target_slice, alpha=0.5):
     crit = nn.CrossEntropyLoss(reduction='none')
     loss_slice = slice(target_slice.start-1, target_slice.stop-1)
     accept_loss = crit(logits[:,loss_slice,:].transpose(1,2), ids[:,target_slice])
