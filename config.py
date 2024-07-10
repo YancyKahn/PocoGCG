@@ -21,5 +21,6 @@ MODEL_PATH_AND_TEMPLATE = {
     }
 }
 
-DATA_PATH = "/root/PocoGCG/data/test/data.csv"
+# DATA_PATH = "/root/PocoGCG/data/test/data.csv"
 # DATA_PATH = "/root/PocoGCG/data/advbench/harmful_behaviors.csv"
+DATA_PATH = "/root/PocoGCG/data/test/poco_llama-2_attack_1720502813.6781209.csv"
